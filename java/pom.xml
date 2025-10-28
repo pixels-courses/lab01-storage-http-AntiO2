@@ -1,0 +1,525 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>io.pixelsdb</groupId>
+    <artifactId>mini-pixels</artifactId>
+    <version>0.2.0-SNAPSHOT</version>
+    <description>Mini-Pixels Main Project</description>
+    <url>https://github.com/pixelsdb/mini-pixels</url>
+    <inceptionYear>2017</inceptionYear>
+
+    <licenses>
+        <license>
+            <name>GNU Affero General Public License 3.0</name>
+            <url>https://www.gnu.org/licenses/agpl-3.0.en.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>mini-common</module>
+        <module>mini-core</module>
+        <module>mini-cli</module>
+        <module>mini-storage-localfs</module>
+        <module>mini-storage-http</module>
+    </modules>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.useIncrementalCompilation>true</maven.compiler.useIncrementalCompilation>
+        <maven.plugin.source.version>3.1.0</maven.plugin.source.version>
+        <maven.plugin.compiler.version>3.8.1</maven.plugin.compiler.version>
+        <maven.plugin.shade.version>3.2.2</maven.plugin.shade.version>
+        <maven.plugin.assembly.version>3.5.0</maven.plugin.assembly.version>
+        <maven.plugin.deploy.version>3.1.0</maven.plugin.deploy.version>
+        <maven.plugin.dependency.version>2.10</maven.plugin.dependency.version>
+        <maven.plugin.antrun.version>3.1.0</maven.plugin.antrun.version>
+        <maven.plugin.surefire.version>2.22.2</maven.plugin.surefire.version>
+        <maven.plugin.os-maven.version>1.6.2</maven.plugin.os-maven.version>
+        <maven.plugin.protobuf.version>0.6.1</maven.plugin.protobuf.version>
+        <maven.plugin.protoc-jar.version>3.3.0.1</maven.plugin.protoc-jar.version>
+        <maven.plugin.build-helper.version>3.6.1</maven.plugin.build-helper.version>
+
+        <!-- common libraries -->
+        <dep.airlift.slice.version>0.34</dep.airlift.slice.version>
+        <!-- netty-4.1.118-Final is used by awssdk-2.30.17 and hadoop-client-3.4.2. And it is compatible with grpc-1.74.0,
+        async-http-client-2.12.4, and jetcd-0.7.7.
+        This version also fixes the problem in Pixels#935 caused by Netty#14479 -->
+        <dep.netty.version>4.1.118.Final</dep.netty.version>
+        <dep.asynchttpclient.version>2.12.4</dep.asynchttpclient.version>
+        <dep.fastjson.version>1.2.83</dep.fastjson.version>
+        <dep.commons-cli.version>1.5.0</dep.commons-cli.version>
+        <dep.commons-io.version>2.16.1</dep.commons-io.version>
+        <!-- guava-33.3.1 is the version used by grpc-1.74.0 -->
+        <dep.guava.version>33.3.1-jre</dep.guava.version>
+        <!-- protobuf-3.25.5 is the version used by grpc-1.74.0 -->
+        <dep.protobuf.version>3.25.5</dep.protobuf.version>
+        <dep.grpc.version>1.74.0</dep.grpc.version>
+        <dep.flatbuffers.version>2.0.8</dep.flatbuffers.version>
+        <dep.jna.version>5.13.0</dep.jna.version>
+        <dep.javax.annotation.version>1.3.2</dep.javax.annotation.version>
+        <!-- http-client-4.5.13 is the version used by awssdk:apache-client-2.30.17 and hadoop-3.4.2 -->
+        <dep.apache-httpclient.version>4.5.13</dep.apache-httpclient.version>
+        <!-- apache httpclient-4.5.13 uses httpcore-4.4.13, however, awssdk:apache-client-2.30.17 uses httpcore-4.4.16 -->
+        <dep.apache-httpcore.version>4.4.16</dep.apache-httpcore.version>
+
+        <!-- logging -->
+        <!-- log4j-2.18.0 is compatible with slf4j-1.7.36 -->
+        <dep.log4j.version>2.18.0</dep.log4j.version>
+        <!-- we only use log4j in pixels, the following are for third-party libraries -->
+        <dep.commons-logging.version>1.2</dep.commons-logging.version>
+        <!-- slf4j-1.7.36 is compatible with 1.7.x that is widely used in third-party libraries -->
+        <dep.slf4j.version>1.7.36</dep.slf4j.version>
+
+        <!-- testing -->
+        <dep.junit4.version>4.13.2</dep.junit4.version>
+        <dep.junit.platform.version>1.8.2</dep.junit.platform.version>
+        <dep.mockito.version>4.5.1</dep.mockito.version>
+        <dep.junit.jupiter.version>5.8.2</dep.junit.jupiter.version>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>central</id>
+            <name>Maven Central</name>
+            <url>https://repo1.maven.org/maven2/</url>
+        </repository>
+    </repositories>
+
+    <distributionManagement>
+        <repository>
+            <id>local.mvn.repo</id>
+            <name>Local Artifacts Repository for Pixels</name>
+            <url>file://${project.basedir}/mvn</url>
+        </repository>
+    </distributionManagement>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- pixels -->
+            <dependency>
+                <groupId>io.pixelsdb</groupId>
+                <artifactId>mini-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.pixelsdb</groupId>
+                <artifactId>mini-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.pixelsdb</groupId>
+                <artifactId>mini-storage-localfs</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.pixelsdb</groupId>
+                <artifactId>mini-storage-http</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.airlift</groupId>
+                <artifactId>slice</artifactId>
+                <version>${dep.airlift.slice.version}</version>
+            </dependency>
+
+            <!-- guava -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${dep.guava.version}</version>
+            </dependency>
+
+            <!-- protobuf -->
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>${dep.protobuf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java-util</artifactId>
+                <version>${dep.protobuf.version}</version>
+            </dependency>
+
+            <!-- grpc -->
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-netty-shaded</artifactId>
+                <version>${dep.grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-protobuf</artifactId>
+                <version>${dep.grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-protobuf-lite</artifactId>
+                <version>${dep.grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-stub</artifactId>
+                <version>${dep.grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-api</artifactId>
+                <version>${dep.grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-core</artifactId>
+                <version>${dep.grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-context</artifactId>
+                <version>${dep.grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-grpclb</artifactId>
+                <version>${dep.grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-util</artifactId>
+                <version>${dep.grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-services</artifactId>
+                <version>${dep.grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-testing</artifactId>
+                <version>${dep.grpc.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- fastjson -->
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>${dep.fastjson.version}</version>
+            </dependency>
+
+            <!-- apache commons cli -->
+            <dependency>
+                <groupId>commons-cli</groupId>
+                <artifactId>commons-cli</artifactId>
+                <version>${dep.commons-cli.version}</version>
+            </dependency>
+
+            <!-- apache commons io -->
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${dep.commons-io.version}</version>
+            </dependency>
+
+            <!-- netty -->
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-all</artifactId>
+                <version>${dep.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-buffer</artifactId>
+                <version>${dep.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-common</artifactId>
+                <version>${dep.netty.version}</version>
+            </dependency>
+
+            <!-- asynchttpclient -->
+            <dependency>
+                <groupId>org.asynchttpclient</groupId>
+                <artifactId>async-http-client</artifactId>
+                <version>${dep.asynchttpclient.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-buffer</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-handler</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-handler-proxy</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-codec-http</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-codec-socks</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-transport-native-epoll</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-transport-native-kqueue</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>net.java.dev.jna</groupId>
+                <artifactId>jna</artifactId>
+                <version>${dep.jna.version}</version>
+            </dependency>
+
+            <!-- apache-httpcomponents -->
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${dep.apache-httpclient.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>log4jj</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <!-- exclude the default httpcore-4.4.13 -->
+                        <groupId>org.apache.httpcomponents</groupId>
+                        <artifactId>httpcore</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore</artifactId>
+                <version>${dep.apache-httpcore.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>log4jj</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!-- javax-annotation -->
+            <dependency>
+                <groupId>javax.annotation</groupId>
+                <artifactId>javax.annotation-api</artifactId>
+                <version>${dep.javax.annotation.version}</version>
+            </dependency>
+
+            <!-- flat buffers -->
+            <dependency>
+                <groupId>com.google.flatbuffers</groupId>
+                <artifactId>flatbuffers-java</artifactId>
+                <version>${dep.flatbuffers.version}</version>
+            </dependency>
+
+            <!-- logging -->
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-core</artifactId>
+                <version>${dep.log4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-api</artifactId>
+                <version>${dep.log4j.version}</version>
+            </dependency>
+            <!-- the following logging libraries are only used for third-party libraries when needed -->
+            <dependency>
+                <!-- the default binding from slf4j to log4j-2, be careful of other conflict bindings -->
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-slf4j-impl</artifactId>
+                <version>${dep.log4j.version}</version>
+            </dependency>
+            <dependency>
+                <!-- migrate log4j-1 logging to slf4j, use it with log4j-slf4j-impl to convert log4j-1 log4j-2 -->
+                <groupId>org.slf4j</groupId>
+                <artifactId>log4j-over-slf4j</artifactId>
+                <version>${dep.slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${dep.slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-logging</groupId>
+                <artifactId>commons-logging</artifactId>
+                <version>${dep.commons-logging.version}</version>
+            </dependency>
+
+            <!-- testing -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${dep.junit4.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.platform</groupId>
+                <artifactId>junit-platform-launcher</artifactId>
+                <version>${dep.junit.platform.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.platform</groupId>
+                <artifactId>junit-platform-runner</artifactId>
+                <version>${dep.junit.platform.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-api</artifactId>
+                <version>${dep.junit.jupiter.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>${dep.junit.jupiter.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>${dep.mockito.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-junit-jupiter</artifactId>
+                <version>${dep.mockito.version}</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!-- logging -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- testing -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <scope>test</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-runner</artifactId>
+            <scope>test</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <scope>test</scope>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven.plugin.compiler.version}</version>
+                    <configuration>
+                        <source>21</source>
+                        <target>21</target>
+                        <encoding>UTF-8</encoding>
+                        <compilerArgs>
+                            <arg>--add-opens</arg>
+                            <arg>java.base/sun.misc=ALL-UNNAMED</arg>
+                        </compilerArgs>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven.plugin.surefire.version}</version>
+                    <configuration>
+                        <skipTests>true</skipTests>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>com.github.os72</groupId>
+                    <artifactId>protoc-jar-maven-plugin</artifactId>
+                    <version>${maven.plugin.protoc-jar.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>

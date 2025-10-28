@@ -1,0 +1,9 @@
+[submodule "cpp/pixels-duckdb/duckdb"]
+	path = cpp/pixels-duckdb/duckdb
+	url = https://github.com/pixelsdb/duckdb
+[submodule "cpp/third-party/googletest"]
+	path = cpp/third-party/googletest
+	url = https://github.com/google/googletest
+[submodule "cpp/third-party/protobuf"]
+	path = cpp/third-party/protobuf
+	url = https://github.com/protocolbuffers/protobuf
