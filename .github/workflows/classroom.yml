@@ -1,0 +1,46 @@
+name: HttpStream Grading
+
+on:
+  - repository_dispatch
+  - workflow_dispatch
+
+jobs:
+  grade:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 23
+
+      - name: Run grading script
+        id: grading
+        run: |
+            echo "========== Running Grading Script =========="
+            chmod +x ${{ github.workspace }}/.github/grading/entry.sh
+            
+            OUTPUT=$(${{ github.workspace }}/.github/grading/entry.sh 2025-fall lab1 2>&1 || true)
+            echo "$OUTPUT"
+
+            SCORE=$(echo "$OUTPUT" | grep '\[SCORE\]' | tail -n1 | awk '{print $2}')
+            if [ -z "$SCORE" ]; then
+                SCORE=0
+            fi
+            echo "FINAL_SCORE=$SCORE" >> $GITHUB_ENV
+            echo "========== Final Score =========="
+            echo "[SCORE] $SCORE"
+        env:
+              MAVEN_OPTS: -Xmx6g -XX:MaxPermSize=512m
+
+      - name: Create Classroom autograding JSON
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/autograding
+          echo "{\"score\": ${{ env.FINAL_SCORE }}, \"output\": \"$(echo "$OUTPUT" | sed 's/"/\\"/g')\"}" > $GITHUB_WORKSPACE/autograding/results.json
+
+      - name: Display JSON
+        run: cat $GITHUB_WORKSPACE/autograding/results.json
