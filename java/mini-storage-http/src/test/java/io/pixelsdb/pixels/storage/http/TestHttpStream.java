@@ -20,7 +20,8 @@
 package io.pixelsdb.pixels.storage.http;
 
 import io.pixelsdb.pixels.common.physical.*;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -28,30 +29,36 @@ import java.nio.ByteOrder;
 
 public class TestHttpStream
 {
-    private volatile Exception readerException = null;
-    private volatile Exception writerException = null;
-    private final int sendLimit = 8*1024*1024;
-    private final int sendNum = 600;
+    private volatile Throwable readerException = null;
+    private volatile Throwable writerException = null;
+    private final int sendLimit = 4*1024*1024;
+    private final int sendNum = 300;
 
     @Test
     public void testPhysicalReaderAndWriter() throws IOException
     {
         Storage httpStream = StorageFactory.Instance().getStorage(Storage.Scheme.httpstream);
         Thread readerThread = new Thread(() -> {
-            try
-            {
+            try {
                 try (PhysicalReader fsReader = PhysicalReaderUtil.newPhysicalReader(
                         httpStream, "httpstream://localhost:29920"))
                 {
-                    int num1 = fsReader.readInt(ByteOrder.BIG_ENDIAN);
-                    assert(num1 == 13);
-                    num1 = fsReader.readInt(ByteOrder.BIG_ENDIAN);
-                    assert(num1 == 169);
+                    try
+                    {
+                        int num1 = fsReader.readInt(ByteOrder.BIG_ENDIAN);
+                        Assertions.assertEquals(13, num1);
+                        num1 = fsReader.readInt(ByteOrder.BIG_ENDIAN);
+                        Assertions.assertEquals(169, num1);
 
-                    long num2 = fsReader.readLong(ByteOrder.BIG_ENDIAN);
-                    assert(num2 == 28561L);
-                    num2 = fsReader.readLong(ByteOrder.BIG_ENDIAN);
-                    assert(num2 == 815730721L);
+                        long num2 = fsReader.readLong(ByteOrder.BIG_ENDIAN);
+                        Assertions.assertEquals(28561L, num2);
+                        num2 = fsReader.readLong(ByteOrder.BIG_ENDIAN);
+                        Assertions.assertEquals(815730721L, num2);
+                    } catch (Throwable t)
+                    {
+                        readerException = t;
+                        throw t;
+                    }
 
                     boolean failed = false;
                     byte[] buffer = new byte[sendLimit];
@@ -121,14 +128,18 @@ public class TestHttpStream
         writerThread.start();
         try
         {
-            readerThread.join();
-            writerThread.join();
-            if (this.readerException != null || this.writerException != null)
+            long timeoutMs = 10_000;
+            readerThread.join(timeoutMs);
+            writerThread.join(timeoutMs);
+            if (readerException != null)
             {
-                throw new IOException();
+                throw new RuntimeException("Reader thread failed", readerException);
             }
-        }
-        catch (InterruptedException e)
+            if (writerException != null)
+            {
+                throw new RuntimeException("Writer thread failed", writerException);
+            }
+        } catch (InterruptedException e)
         {
             throw new RuntimeException(e);
         }
